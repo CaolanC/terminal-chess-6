@@ -1,6 +1,6 @@
-build:
-	rustc main.rs
-	./main
+#build:
+#	rustc main.rs
+#	./main
 
 Board:
 	rustc board.rs
