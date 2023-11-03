@@ -9,3 +9,7 @@ Board:
 Piece:
 	rustc piece.rs
 	./piece
+
+Fen:
+	rustc fen_parser.rs
+	./fen_parser
