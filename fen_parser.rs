@@ -10,8 +10,8 @@ mod fen_parser {
 
     impl Fen {
         pub fn read_fen(&mut self) {
-            let contents = fs::read_to_string("./board_layouts/fen/default_fen.txt")
-                .expect("File not found");
+            let contents = fs::read_to_string("./board_layouts/fen_strings/default_fen.txt")
+                .expect("File is read.");
 
             let parts = contents.split(" ");
             let collection = parts.collect::<Vec<&str>>();
