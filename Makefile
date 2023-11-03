@@ -1,15 +1,15 @@
-#build:
-#	rustc main.rs
-#	./main
+build:
+	rustc src/main.rs --out-dir bin
+	./bin/main
 
 Board:
-	rustc board.rs --out-dir binaries
-	./binaries/board
+	rustc src/game/board.rs --out-dir bin
+	./bin/board
 
 Piece:
-	rustc piece.rs --out-dir binaries
-	./binaries/piece
+	rustc src/game/piece.rs --out-dir bin
+	./bin/piece
 
 Fen:
-	rustc fen_parser.rs --out-dir binaries
-	./binaries/fen_parser
+	rustc src/util/fen_parser.rs --out-dir bin
+	./bin/fen_parser
