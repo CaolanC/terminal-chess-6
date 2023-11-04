@@ -7,11 +7,11 @@ mod game
         pub is_empty: bool,
         pub is_white: bool,
         pub is_black: bool,
-     pub int_representation: u8,
+        pub int_representation: u8,
     }
 
 
-    struct Board
+    pub struct Board
     {
         board: [[Piece; 8]; 8],
     }
@@ -27,17 +27,24 @@ mod game
                 int_representation: 0,   
             }; 8]; 8]}
         }
-        pub fn default_fill(&self){
+        pub fn default_fill(&mut self){
             for i in 0..8 {
                 for j in 0..8
                 {
-                    println!("{} - {}", i.to_string(), j.to_string());
+                    self.board[i][j] = Piece {
+                        is_empty: true,
+                        is_white: false,
+                        is_black: false,
+                        int_representation: 0,
+                    };
                 };
             };
         }
     }
 }
 
-fn main() {
+use game::Board;
+
+fn main() { 
     println!("Game ran without issue.");
 }
