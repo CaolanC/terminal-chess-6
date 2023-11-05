@@ -1,6 +1,8 @@
 use std::fs;
 use std::convert::TryInto;
 use std::char::ToLowercase;
+use std::char::from_digit;
+use std::io::Write;
 
 #[allow(dead_code)]
 pub struct Fen {
@@ -66,6 +68,26 @@ impl Fen {
         return castling;
     }
 
+    fn parse_en_passent(en_passent: &String) -> String {
+        let mut en_passent_parsed: String = "\n".to_string();
+        let mut en_p_chars = en_passent.chars();
+
+        let char1 = en_p_chars.next_back().expect("char unwrap");
+        if char1 == '-' {
+            return "\n-".to_string();
+        }
+
+        let row = from_digit(8 - (char1.to_digit(10)).unwrap(), 10).unwrap().to_string();
+        let char2 = en_p_chars.next_back().expect("char unwrap");
+        let collumn = from_digit((char2 as u32) - 97, 10).expect("collumn unwrap").to_string();
+
+        en_passent_parsed.push_str(&row);
+        en_passent_parsed.push_str(" ");
+        en_passent_parsed.push_str(&collumn);
+
+        return en_passent_parsed;
+    }
+
     pub fn read_fen(&mut self, path: &str) {
     let contents = fs::read_to_string(path)
             .expect("File is read.");
@@ -106,7 +128,8 @@ impl Fen {
         let castling: &String = &Self::parse_castling(&self.unparsed_fen_vector[2]);
         tcfen.push_str(&castling);
 
-        let en_passent: &String = &Self::parse_cas
+        let en_passent: &String = &Self::parse_en_passent(&self.unparsed_fen_vector[3]);
+        tcfen.push_str(&en_passent);
         println!("{}", tcfen);
         self.board_fen = tcfen;
     }
@@ -118,10 +141,20 @@ impl Fen {
             unparsed_fen_vector: Vec::new(),
         }
     }
+
+    pub fn write_fen_file(&mut self) {
+        let mut file = fs::OpenOptions::new()
+                                        .append(true)
+                                        .open("../../board_layouts/fen_custom_format/out.txt");
+    file.expect("file write").write_all(self.board_fen.as_bytes());
+
+    }
+
 }
 
 fn main() {
     let mut x = Fen::new();
-    Fen::read_fen(&mut x, "../../board_layouts/fen_strings/default_fen.txt");
+    Fen::read_fen(&mut x, "../../board_layouts/fen_strings/default.txt");
     Fen::parse_board_layout(&mut x);
+    Fen::write_fen_file(&mut x);
 }
