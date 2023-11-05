@@ -4,6 +4,9 @@ mod util;
 
 use io::ansi::{Colour, Modifier, Style};
 
+fn start_game() {
+}
+
 fn main() {
     println!(
         "{}",
