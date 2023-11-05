@@ -1,6 +1,5 @@
 use std::fs;
 use std::convert::TryInto;
-use std::char::ToLowercase;
 use std::char::from_digit;
 use std::io::Write;
 
@@ -143,10 +142,10 @@ impl Fen {
     }
 
     pub fn write_fen_file(&mut self) {
-        let mut file = fs::OpenOptions::new()
+        let file = fs::OpenOptions::new()
                                         .append(true)
-                                        .open("../../board_layouts/fen_custom_format/out.txt");
-    file.expect("file write").write_all(self.board_fen.as_bytes());
+                                        .open("../../board_layouts/fen_custom_format/out.fen");
+    let _ = file.expect("file write").write_all(self.board_fen.as_bytes());
 
     }
 
@@ -156,5 +155,4 @@ fn main() {
     let mut x = Fen::new();
     Fen::read_fen(&mut x, "../../board_layouts/fen_strings/default.txt");
     Fen::parse_board_layout(&mut x);
-    Fen::write_fen_file(&mut x);
 }

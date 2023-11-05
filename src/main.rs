@@ -1,10 +1,6 @@
 mod game;
 mod io;
-
-// Commented out until fen-parser is implemented,
-// as compilation fails if included
-//
-// mod util;
+mod util;
 
 use io::ansi::{Colour, Modifier, Style};
 
