@@ -34,21 +34,6 @@ impl Colour {
         }
     }
 
-    fn name(&self) -> String {
-        match *self {
-            Colour::BLACK => "Black".to_string(),
-            Colour::RED => "Red".to_string(),
-            Colour::YELLOW => "Yellow".to_string(),
-            Colour::GREEN => "Green".to_string(),
-            Colour::BLUE => "Blue".to_string(),
-            Colour::CYAN => "Cyan".to_string(),
-            Colour::MAGENTA => "Magenta".to_string(),
-            Colour::WHITE => "White".to_string(),
-            Colour::RESET => "Reset".to_string(),
-            _ => self.0.to_string(),
-        }
-    }
-
     pub fn escaped_fg(&self) -> String {
         if self.is_predefined() {
             return format!("\x1b[{}m", self.0);
@@ -62,16 +47,6 @@ impl Colour {
             return format!("\x1b[{}m", self.0 + 10);
         } else {
             return format!("\x1b[48;5;{}m", self.0);
-        }
-    }
-}
-
-impl Debug for Colour {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.is_predefined() {
-            write!(f, "{}", self.name())
-        } else {
-            write!(f, "Colour({})", self.0)
         }
     }
 }
@@ -90,32 +65,11 @@ impl Modifier {
     pub const STRIKE: Modifier = Modifier(9);
     pub const RESET: Modifier = Modifier(0);
 
-    fn name(&self) -> String {
-        match *self {
-            Modifier::BOLD => "Bold".to_string(),
-            Modifier::DIM => "Dim".to_string(),
-            Modifier::ITALIC => "Italic".to_string(),
-            Modifier::UNDERLINED => "Underlined".to_string(),
-            Modifier::BLINK => "Blink".to_string(),
-            Modifier::REVERSE => "Reverse".to_string(),
-            Modifier::HIDDEN => "Hidden".to_string(),
-            Modifier::STRIKE => "Strike".to_string(),
-            _ => "Unknown".to_string(),
-        }
-    }
-
     pub fn escaped(&self) -> String {
         format!("\x1b[{}m", self.0)
     }
 }
 
-impl Debug for Modifier {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.name())
-    }
-}
-
-#[derive(Debug)]
 enum Representation {
     FgColour(Colour),
     BgColour(Colour),
@@ -123,7 +77,6 @@ enum Representation {
     Text(String),
 }
 
-#[derive(Debug)]
 pub struct Style(Vec<Representation>);
 
 impl Style {
