@@ -4,8 +4,7 @@ mod util;
 
 use io::ansi::{Colour, Modifier, Style};
 
-fn start_game() {
-}
+fn start_game() {}
 
 fn main() {
     let mut style = Style::from("This is a string with lots of styles!");

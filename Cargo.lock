@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "terminal-chess-6"
+name = "terminal-chess"
 version = "0.1.0"
