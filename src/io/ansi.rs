@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
 const RESET: &str = "\x1b[0m";
 
@@ -16,6 +16,7 @@ impl Colour {
     pub const MAGENTA: Colour = Colour(35);
     pub const CYAN: Colour = Colour(36);
     pub const WHITE: Colour = Colour(37);
+    pub const RESET: Colour = Colour(0);
 
     fn is_predefined(&self) -> bool {
         match *self {
@@ -26,9 +27,51 @@ impl Colour {
             | Colour::BLUE
             | Colour::CYAN
             | Colour::MAGENTA
-            | Colour::WHITE => true,
+            | Colour::WHITE
+            | Colour::RESET => true,
 
             _ => false,
+        }
+    }
+
+    fn name(&self) -> String {
+        match *self {
+            Colour::BLACK => "Black".to_string(),
+            Colour::RED => "Red".to_string(),
+            Colour::YELLOW => "Yellow".to_string(),
+            Colour::GREEN => "Green".to_string(),
+            Colour::BLUE => "Blue".to_string(),
+            Colour::CYAN => "Cyan".to_string(),
+            Colour::MAGENTA => "Magenta".to_string(),
+            Colour::WHITE => "White".to_string(),
+            Colour::RESET => "Reset".to_string(),
+            _ => self.0.to_string(),
+        }
+    }
+
+    pub fn escaped_fg(&self) -> String {
+        if self.is_predefined() {
+            return format!("\x1b[{}m", self.0);
+        } else {
+            return format!("\x1b[38;5;{}m", self.0);
+        }
+    }
+
+    pub fn escaped_bg(&self) -> String {
+        if self.is_predefined() {
+            return format!("\x1b[{}m", self.0 + 10);
+        } else {
+            return format!("\x1b[48;5;{}m", self.0);
+        }
+    }
+}
+
+impl Debug for Colour {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.is_predefined() {
+            write!(f, "{}", self.name())
+        } else {
+            write!(f, "Colour({})", self.0)
         }
     }
 }
@@ -45,71 +88,107 @@ impl Modifier {
     pub const REVERSE: Modifier = Modifier(7);
     pub const HIDDEN: Modifier = Modifier(8);
     pub const STRIKE: Modifier = Modifier(9);
+    pub const RESET: Modifier = Modifier(0);
+
+    fn name(&self) -> String {
+        match *self {
+            Modifier::BOLD => "Bold".to_string(),
+            Modifier::DIM => "Dim".to_string(),
+            Modifier::ITALIC => "Italic".to_string(),
+            Modifier::UNDERLINED => "Underlined".to_string(),
+            Modifier::BLINK => "Blink".to_string(),
+            Modifier::REVERSE => "Reverse".to_string(),
+            Modifier::HIDDEN => "Hidden".to_string(),
+            Modifier::STRIKE => "Strike".to_string(),
+            _ => "Unknown".to_string(),
+        }
+    }
+
+    pub fn escaped(&self) -> String {
+        format!("\x1b[{}m", self.0)
+    }
 }
 
-pub struct Style(String);
+impl Debug for Modifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name())
+    }
+}
+
+#[derive(Debug)]
+enum Representation {
+    FgColour(Colour),
+    BgColour(Colour),
+    Modifier(Modifier),
+    Text(String),
+}
+
+#[derive(Debug)]
+pub struct Style(Vec<Representation>);
 
 impl Style {
-    pub fn from(s: &str) -> Style {
-        Style(s.to_string())
+    fn has_reset(&self) -> bool {
+        match self.0.last() {
+            Some(Representation::FgColour(Colour::RESET)) => true,
+            _ => false,
+        }
     }
 
-    pub fn fg(mut self, colour: Colour) -> Style {
-        let esc_code = if colour.is_predefined() {
-            "["
-        } else {
-            "[38;5;"
-        };
+    fn add_reset(&mut self) {
+        if !self.has_reset() {
+            self.0.push(Representation::FgColour(Colour::RESET));
+        }
+    }
 
-        self.0 = format!("\x1b{esc_code}{}m{}{RESET}", colour.0, self.0);
+    pub fn from(s: &str) -> Self {
+        Self(vec![Representation::Text(s.to_string())])
+    }
+
+    pub fn fg(&mut self, colour: Colour) -> &mut Self {
+        self.0.insert(0, Representation::FgColour(colour));
+        self.add_reset();
         self
     }
 
-    pub fn bg(mut self, colour: Colour) -> Style {
-        // bg colours are fg + 10, but if a custom 256 colour is used
-        // then it's just the colour code
-        let (esc_code, adjusted_colour) = if colour.is_predefined() {
-            ("[", colour.0 + 10)
-        } else {
-            ("[48;5;", colour.0)
-        };
-
-        self.0 = format!("\x1b[{}m{}{RESET}", adjusted_colour, self.0);
+    pub fn bg(&mut self, colour: Colour) -> &mut Self {
+        self.0.insert(0, Representation::BgColour(colour));
+        self.add_reset();
         self
     }
 
-    pub fn with(mut self, modifier: Modifier) -> Style {
-        self.0 = format!("\x1b[{}m{}{RESET}", modifier.0, self.0);
+    pub fn with(&mut self, modifier: Modifier) -> &mut Self {
+        self.0.insert(0, Representation::Modifier(modifier));
+        self.add_reset();
         self
     }
 
     /* ---- Default colouring options ---- */
-    pub fn info(self) -> Style {
+    pub fn info(&mut self) -> &mut Self {
         self.fg(Colour::CYAN)
     }
 
-    pub fn success(self) -> Style {
+    pub fn success(&mut self) -> &mut Self {
         self.fg(Colour::GREEN)
     }
 
-    pub fn warning(self) -> Style {
+    pub fn warning(&mut self) -> &mut Self {
         self.fg(Colour::YELLOW)
     }
 
-    pub fn error(self) -> Style {
+    pub fn error(&mut self) -> &mut Self {
         self.fg(Colour::RED)
     }
 
     /* ---- Default modifier options ---- */
-    pub fn bold(self) -> Style {
+    pub fn bold(&mut self) -> &mut Self {
         self.with(Modifier::BOLD)
     }
 
-    pub fn italic(self) -> Style {
+    pub fn italic(&mut self) -> &mut Self {
         self.with(Modifier::ITALIC)
     }
 
-    pub fn underline(self) -> Style {
+    pub fn underline(&mut self) -> &mut Self {
         self.with(Modifier::UNDERLINED)
     }
 
@@ -118,6 +197,15 @@ impl Style {
 
 impl Display for Style {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        let mut output = String::new();
+        for repr in &self.0 {
+            match repr {
+                Representation::FgColour(colour) => output.push_str(&colour.escaped_fg()),
+                Representation::BgColour(colour) => output.push_str(&colour.escaped_bg()),
+                Representation::Modifier(modifier) => output.push_str(&modifier.escaped()),
+                Representation::Text(text) => output.push_str(text),
+            };
+        }
+        write!(f, "{}", output)
     }
 }
