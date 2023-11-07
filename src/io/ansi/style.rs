@@ -2,147 +2,148 @@
 
 use std::fmt::{Debug, Display};
 
-const RESET: &str = "\x1b[0m";
+pub const RESET: &'static str = "\x1b[0m";
 
 #[derive(PartialEq, Eq)]
-pub struct Colour(pub u8);
+pub struct FgColour(&'static str);
 
-impl Colour {
-    pub const BLACK: Colour = Colour(30);
-    pub const RED: Colour = Colour(31);
-    pub const GREEN: Colour = Colour(32);
-    pub const YELLOW: Colour = Colour(33);
-    pub const BLUE: Colour = Colour(34);
-    pub const MAGENTA: Colour = Colour(35);
-    pub const CYAN: Colour = Colour(36);
-    pub const WHITE: Colour = Colour(37);
-    pub const RESET: Colour = Colour(0);
+impl FgColour {
+    pub const BLACK: &FgColour = &FgColour("30");
+    pub const RED: &FgColour = &FgColour("31");
+    pub const GREEN: &FgColour = &FgColour("32");
+    pub const YELLOW: &FgColour = &FgColour("33");
+    pub const BLUE: &FgColour = &FgColour("34");
+    pub const MAGENTA: &FgColour = &FgColour("35");
+    pub const CYAN: &FgColour = &FgColour("36");
+    pub const WHITE: &FgColour = &FgColour("37");
 
-    fn is_predefined(&self) -> bool {
-        match *self {
-            Colour::BLACK
-            | Colour::RED
-            | Colour::YELLOW
-            | Colour::GREEN
-            | Colour::BLUE
-            | Colour::CYAN
-            | Colour::MAGENTA
-            | Colour::WHITE
-            | Colour::RESET => true,
-
-            _ => false,
-        }
-    }
-
-    pub fn escaped_fg(&self) -> String {
-        if self.is_predefined() {
-            return format!("\x1b[{}m", self.0);
-        } else {
-            return format!("\x1b[38;5;{}m", self.0);
-        }
-    }
-
-    pub fn escaped_bg(&self) -> String {
-        if self.is_predefined() {
-            return format!("\x1b[{}m", self.0 + 10);
-        } else {
-            return format!("\x1b[48;5;{}m", self.0);
-        }
-    }
-}
-
-#[derive(PartialEq, Eq)]
-pub struct Modifier(u8);
-
-impl Modifier {
-    pub const BOLD: Modifier = Modifier(1);
-    pub const DIM: Modifier = Modifier(2);
-    pub const ITALIC: Modifier = Modifier(3);
-    pub const UNDERLINED: Modifier = Modifier(4);
-    pub const BLINK: Modifier = Modifier(5);
-    pub const REVERSE: Modifier = Modifier(7);
-    pub const HIDDEN: Modifier = Modifier(8);
-    pub const STRIKE: Modifier = Modifier(9);
-    pub const RESET: Modifier = Modifier(0);
-
-    pub fn escaped(&self) -> String {
+    fn escaped(&self) -> String {
         format!("\x1b[{}m", self.0)
     }
 }
 
-enum Representation {
-    FgColour(Colour),
-    BgColour(Colour),
-    Modifier(Modifier),
-    Text(String),
+impl Display for FgColour {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
 }
 
-pub struct Style(Vec<Representation>);
+#[derive(PartialEq, Eq)]
+pub struct BgColour(&'static str);
+
+impl BgColour {
+    pub const BLACK: &BgColour = &BgColour("40");
+    pub const RED: &BgColour = &BgColour("41");
+    pub const GREEN: &BgColour = &BgColour("42");
+    pub const YELLOW: &BgColour = &BgColour("43");
+    pub const BLUE: &BgColour = &BgColour("44");
+    pub const MAGENTA: &BgColour = &BgColour("45");
+    pub const CYAN: &BgColour = &BgColour("46");
+    pub const WHITE: &BgColour = &BgColour("47");
+
+    fn escaped(&self) -> String {
+        format!("\x1b[{}m", self.0)
+    }
+}
+
+impl Display for BgColour {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(PartialEq, Eq)]
+pub struct Modifier(&'static str);
+
+impl Modifier {
+    pub const BOLD: &Modifier = &Modifier("1");
+    pub const DIM: &Modifier = &Modifier("2");
+    pub const ITALIC: &Modifier = &Modifier("3");
+    pub const UNDERLINED: &Modifier = &Modifier("4");
+    pub const BLINK: &Modifier = &Modifier("5");
+    pub const REVERSE: &Modifier = &Modifier("7");
+    pub const HIDDEN: &Modifier = &Modifier("8");
+    pub const STRIKE: &Modifier = &Modifier("9");
+
+    fn escaped(&self) -> String {
+        format!("\x1b[{}m", self.0)
+    }
+}
+
+impl Display for Modifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+pub struct Text(&'static str);
+
+pub struct Style(Vec<&'static str>);
 
 impl Style {
     fn has_reset(&self) -> bool {
         match self.0.last() {
-            Some(Representation::FgColour(Colour::RESET)) => true,
-            _ => false,
+            Some(s) => *s == RESET,
+            None => false,
         }
     }
 
     fn add_reset(&mut self) {
         if !self.has_reset() {
-            self.0.push(Representation::FgColour(Colour::RESET));
+            self.0.push(RESET);
         }
     }
 
-    pub fn from(s: &str) -> Self {
-        Self(vec![Representation::Text(s.to_string())])
+    pub fn from(s: &'static str) -> Self {
+        Self(vec![s])
     }
 
-    pub fn fg(&mut self, colour: Colour) -> &mut Self {
-        self.0.insert(0, Representation::FgColour(colour));
+    pub fn fg(&mut self, colour: &'static FgColour) -> &mut Self {
+        self.0.insert(0, colour.0);
         self.add_reset();
         self
     }
 
-    pub fn bg(&mut self, colour: Colour) -> &mut Self {
-        self.0.insert(0, Representation::BgColour(colour));
+    pub fn bg(&mut self, colour: &'static BgColour) -> &mut Self {
+        self.0.insert(0, colour.0);
         self.add_reset();
         self
     }
 
-    pub fn with(&mut self, modifier: Modifier) -> &mut Self {
-        self.0.insert(0, Representation::Modifier(modifier));
+    pub fn with(&mut self, modifier: &'static Modifier) -> &mut Self {
+        self.0.insert(0, modifier.0);
         self.add_reset();
         self
     }
 
     /* ---- Default colouring options ---- */
     pub fn info(&mut self) -> &mut Self {
-        self.fg(Colour::CYAN)
+        self.fg(&FgColour::CYAN)
     }
 
     pub fn success(&mut self) -> &mut Self {
-        self.fg(Colour::GREEN)
+        self.fg(&FgColour::GREEN)
     }
 
     pub fn warning(&mut self) -> &mut Self {
-        self.fg(Colour::YELLOW)
+        self.fg(&FgColour::YELLOW)
     }
 
     pub fn error(&mut self) -> &mut Self {
-        self.fg(Colour::RED)
+        self.fg(&FgColour::RED)
     }
 
     /* ---- Default modifier options ---- */
     pub fn bold(&mut self) -> &mut Self {
-        self.with(Modifier::BOLD)
+        self.with(&Modifier::BOLD)
     }
 
     pub fn italic(&mut self) -> &mut Self {
-        self.with(Modifier::ITALIC)
+        self.with(&Modifier::ITALIC)
     }
 
     pub fn underline(&mut self) -> &mut Self {
-        self.with(Modifier::UNDERLINED)
+        self.with(&Modifier::UNDERLINED)
     }
 
     // TODO add more modifiers, these are the most common so fine for now
@@ -150,15 +151,10 @@ impl Style {
 
 impl Display for Style {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut output = String::new();
-        for repr in &self.0 {
-            match repr {
-                Representation::FgColour(colour) => output.push_str(&colour.escaped_fg()),
-                Representation::BgColour(colour) => output.push_str(&colour.escaped_bg()),
-                Representation::Modifier(modifier) => output.push_str(&modifier.escaped()),
-                Representation::Text(text) => output.push_str(text),
-            };
+        let mut s = String::new();
+        for style in &self.0 {
+            s.push_str(style);
         }
-        write!(f, "{}", output)
+        write!(f, "{}", s)
     }
 }

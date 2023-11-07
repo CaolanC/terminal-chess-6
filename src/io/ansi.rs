@@ -1,2 +1,3 @@
-mod style;
 pub use self::style::*;
+
+mod style;

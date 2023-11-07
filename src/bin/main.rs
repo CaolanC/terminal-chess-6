@@ -1,8 +1,4 @@
-mod game;
-mod io;
-mod util;
-
-use io::ansi::{Colour, Modifier, Style};
+use terminal_chess::io::ansi::{BgColour, FgColour, Modifier, Style};
 
 fn start_game() {}
 
@@ -12,8 +8,8 @@ fn main() {
     println!(
         "{}",
         style
-            .bg(Colour::BLUE) // Some colours have shortcuts
-            .fg(Colour(19)) // Any 8-bit colour (see https://en.wikipedia.org/wiki/ANSI_escape_code)
+            .bg(BgColour::BLUE) // Some colours have shortcuts
+            .fg(FgColour::RED) // Any 8-bit colour (see https://en.wikipedia.org/wiki/ANSI_escape_code)
             .bold() // Modifiers also have shortcuts
             .underline()
             .with(Modifier::ITALIC) // or can be added manually
