@@ -1,5 +1,7 @@
+use chess::io::ansi::{Colours, Modifiers, Style};
+use chess::styled;
+
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use terminal_chess::io::ansi::{BgColour, FgColour, Style};
 
 fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("ansi: static str impl", |b| {
@@ -7,13 +9,29 @@ fn criterion_benchmark(c: &mut Criterion) {
             let mut style = Style::from(black_box("This is a test string to be styled."));
 
             style
-                .fg(black_box(FgColour::RED))
-                .bg(black_box(BgColour::BLUE))
+                .colour(black_box(Colours::RED))
+                .colour(black_box(Colours::BG_BLUE))
                 .bold()
                 .italic()
-                .underline();
+                .underlined();
 
             format!("{}", style);
+        })
+    });
+
+    c.bench_function("ansi: with macro", |b| {
+        b.iter(|| {
+            format!(
+                "{}",
+                styled!(
+                    "This is a test string to be styled",
+                    "red",
+                    "bg-blue",
+                    "bold",
+                    "italic",
+                    "underlined"
+                )
+            );
         })
     });
 }

@@ -1,82 +1,41 @@
 #![allow(unused)]
 
-use std::fmt::{Debug, Display};
+use std::fmt::Display;
 
 pub const RESET: &'static str = "\x1b[0m";
 
-#[derive(PartialEq, Eq)]
-pub struct FgColour(&'static str);
+pub struct Colours(i32);
+impl Colours {
+    pub const BLACK: &'static str = "\x1b[30m";
+    pub const RED: &'static str = "\x1b[31m";
+    pub const GREEN: &'static str = "\x1b[32m";
+    pub const YELLOW: &'static str = "\x1b[33m";
+    pub const BLUE: &'static str = "\x1b[34m";
+    pub const MAGENTA: &'static str = "\x1b[35m";
+    pub const CYAN: &'static str = "\x1b[36m";
+    pub const WHITE: &'static str = "\x1b[37m";
 
-impl FgColour {
-    pub const BLACK: &FgColour = &FgColour("30");
-    pub const RED: &FgColour = &FgColour("31");
-    pub const GREEN: &FgColour = &FgColour("32");
-    pub const YELLOW: &FgColour = &FgColour("33");
-    pub const BLUE: &FgColour = &FgColour("34");
-    pub const MAGENTA: &FgColour = &FgColour("35");
-    pub const CYAN: &FgColour = &FgColour("36");
-    pub const WHITE: &FgColour = &FgColour("37");
-
-    fn escaped(&self) -> String {
-        format!("\x1b[{}m", self.0)
-    }
+    pub const BG_BLACK: &'static str = "\x1b[40m";
+    pub const BG_RED: &'static str = "\x1b[41m";
+    pub const BG_GREEN: &'static str = "\x1b[42m";
+    pub const BG_YELLOW: &'static str = "\x1b[43m";
+    pub const BG_BLUE: &'static str = "\x1b[44m";
+    pub const BG_MAGENTA: &'static str = "\x1b[45m";
+    pub const BG_CYAN: &'static str = "\x1b[46m";
+    pub const BG_WHITE: &'static str = "\x1b[47m";
 }
 
-impl Display for FgColour {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
+pub struct Modifiers(i32);
+impl Modifiers {
+    pub const BOLD: &'static str = "\x1b[1m";
+    pub const DIM: &'static str = "\x1b[2m";
+    pub const ITALIC: &'static str = "\x1b[3m";
+    pub const UNDERLINED: &'static str = "\x1b[4m";
+    pub const BLINK: &'static str = "\x1b[5m";
+    pub const REVERSE: &'static str = "\x1b[7m";
+    pub const HIDDEN: &'static str = "\x1b[8m";
+    pub const STRIKE: &'static str = "\x1b[9m";
 }
-
-#[derive(PartialEq, Eq)]
-pub struct BgColour(&'static str);
-
-impl BgColour {
-    pub const BLACK: &BgColour = &BgColour("40");
-    pub const RED: &BgColour = &BgColour("41");
-    pub const GREEN: &BgColour = &BgColour("42");
-    pub const YELLOW: &BgColour = &BgColour("43");
-    pub const BLUE: &BgColour = &BgColour("44");
-    pub const MAGENTA: &BgColour = &BgColour("45");
-    pub const CYAN: &BgColour = &BgColour("46");
-    pub const WHITE: &BgColour = &BgColour("47");
-
-    fn escaped(&self) -> String {
-        format!("\x1b[{}m", self.0)
-    }
-}
-
-impl Display for BgColour {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-#[derive(PartialEq, Eq)]
-pub struct Modifier(&'static str);
-
-impl Modifier {
-    pub const BOLD: &Modifier = &Modifier("1");
-    pub const DIM: &Modifier = &Modifier("2");
-    pub const ITALIC: &Modifier = &Modifier("3");
-    pub const UNDERLINED: &Modifier = &Modifier("4");
-    pub const BLINK: &Modifier = &Modifier("5");
-    pub const REVERSE: &Modifier = &Modifier("7");
-    pub const HIDDEN: &Modifier = &Modifier("8");
-    pub const STRIKE: &Modifier = &Modifier("9");
-
-    fn escaped(&self) -> String {
-        format!("\x1b[{}m", self.0)
-    }
-}
-
-impl Display for Modifier {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-pub struct Text(&'static str);
 
 pub struct Style(Vec<&'static str>);
 
@@ -98,52 +57,46 @@ impl Style {
         Self(vec![s])
     }
 
-    pub fn fg(&mut self, colour: &'static FgColour) -> &mut Self {
-        self.0.insert(0, colour.0);
+    pub fn colour(&mut self, colour: &'static str) -> &mut Self {
+        self.0.insert(0, colour);
         self.add_reset();
         self
     }
 
-    pub fn bg(&mut self, colour: &'static BgColour) -> &mut Self {
-        self.0.insert(0, colour.0);
-        self.add_reset();
-        self
-    }
-
-    pub fn with(&mut self, modifier: &'static Modifier) -> &mut Self {
-        self.0.insert(0, modifier.0);
+    pub fn with(&mut self, modifier: &'static str) -> &mut Self {
+        self.0.insert(0, modifier);
         self.add_reset();
         self
     }
 
     /* ---- Default colouring options ---- */
     pub fn info(&mut self) -> &mut Self {
-        self.fg(&FgColour::CYAN)
+        self.colour(Colours::CYAN)
     }
 
     pub fn success(&mut self) -> &mut Self {
-        self.fg(&FgColour::GREEN)
+        self.colour(Colours::GREEN)
     }
 
     pub fn warning(&mut self) -> &mut Self {
-        self.fg(&FgColour::YELLOW)
+        self.colour(Colours::YELLOW)
     }
 
     pub fn error(&mut self) -> &mut Self {
-        self.fg(&FgColour::RED)
+        self.colour(Colours::RED)
     }
 
     /* ---- Default modifier options ---- */
     pub fn bold(&mut self) -> &mut Self {
-        self.with(&Modifier::BOLD)
+        self.with(Modifiers::BOLD)
     }
 
     pub fn italic(&mut self) -> &mut Self {
-        self.with(&Modifier::ITALIC)
+        self.with(Modifiers::ITALIC)
     }
 
-    pub fn underline(&mut self) -> &mut Self {
-        self.with(&Modifier::UNDERLINED)
+    pub fn underlined(&mut self) -> &mut Self {
+        self.with(Modifiers::UNDERLINED)
     }
 
     // TODO add more modifiers, these are the most common so fine for now
@@ -151,10 +104,6 @@ impl Style {
 
 impl Display for Style {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut s = String::new();
-        for style in &self.0 {
-            s.push_str(style);
-        }
-        write!(f, "{}", s)
+        write!(f, "{}", self.0.join(""))
     }
 }
