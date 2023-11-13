@@ -1,5 +1,7 @@
 mod game
 {
+    use std::fmt::Debug;
+
     #[derive (Clone)]
     #[derive (Copy)]
     pub struct Piece
@@ -8,6 +10,8 @@ mod game
         pub is_white: bool,
         pub is_black: bool,
         pub int_representation: u8,
+        pub row: i32,
+        pub collumn: i32,
     }
 
     impl Piece {
@@ -19,13 +23,15 @@ mod game
             return false
         }
 
-        pub fn new(str_fen: &String) -> Self {
+        pub fn new(str_fen: &String, row: i32, collumn: i32) -> Self {
             if str_fen.to_string() == "00" {
                 Self {
                     is_empty: true,
                     is_white: false,
                     is_black: false,
                     int_representation: 0,
+                    row: -1,
+                    collumn: -1,
                 }
             } else {
                 let mut fen_chars = str_fen.chars();
@@ -46,7 +52,8 @@ mod game
                     is_white: s_is_white,
                     is_black: !(s_is_white),
                     int_representation: s_int_rep,
-                    
+                    row: row,
+                    collumn: collumn,
                 }
             }
         }
@@ -54,13 +61,14 @@ mod game
 
     pub struct Board
     {
-        board: [[Piece; 8]; 8],
+        pub board: [[Piece; 8]; 8],
         fen_parse: String,
+        pub white_king_position: [i8; 2],
+        pub black_king_position: [i8; 2],
     }
 
-    impl Board {
-
-        pub fn debug_print(&self) {
+    impl Debug for Board {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             let mut board = "".to_string();
             for i in 0..8 {
                 for j in 0..8 {
@@ -69,7 +77,43 @@ mod game
                 }
                 board.push_str("\n");
             }
-            println!("{}", board.trim_end());
+            write!(f, "Board:\n----------------\n{}\n----------------", board.trim_end());
+
+            let mut board = "".to_string();
+            for i in 0..8 {
+                for j in 0..8 {
+                    board.push_str(" ");
+                    board.push_str(&self.board[i][j].is_white.to_string().to_owned());
+                }
+                board.push_str("\n");
+            }
+            write!(f, "Board:\n----------------\n{}\n----------------", board.trim_end())
+
+
+        }
+
+    }
+
+    impl Board {
+
+        fn find_kings(&mut self) {
+            for i in 0..8 {
+                for j in 0..8 {
+                    if self.board[i][j].int_representation == 6 {
+
+                        if self.board[i][j].is_white {
+                            let mut pos = [-1; 2];
+                            pos[0] = i as i8;
+                            pos[1] = j as i8;
+                            self.white_king_position = pos;
+                        } else {
+                            let mut pos = [-1; 2];
+                            pos[0] = i as i8;
+                            pos[1] = j as i8;
+                        }
+                    }
+                }
+            }
         }
 
         fn fill_fen_parsed(&mut self) {
@@ -83,7 +127,7 @@ mod game
                     j = 0;
                     i += 1;
                 }
-                self.board[i][j] = Piece::new(&segment);
+                self.board[i][j] = Piece::new(&segment, i as i32, j as i32);
                 j += 1;
             }
         }
@@ -94,6 +138,7 @@ mod game
             let strings: Vec<String> = collection.iter().map(|&s|(s.into())).collect();
             self.fen_parse = (&strings[0]).to_string();
             Self::fill_fen_parsed(self);
+            Self::find_kings(self);
 
         }
 
@@ -104,9 +149,15 @@ mod game
                     is_white: false,
                     is_black: false,
                     is_empty: true,
-                    int_representation: 0, }
+                    int_representation: 0,
+                    row: -1,
+                    collumn: -1,
+                }
+                    
                     ; 8]; 8],
                 fen_parse: "".to_string(),
+                white_king_position: [-1; 2],
+                black_king_position: [-1; 2],
                         }
         }
 
@@ -119,6 +170,8 @@ mod game
                         is_white: false,
                         is_black: false,
                         int_representation: 0,
+                        row: -1,
+                        collumn: -1,
                     };
                 };
             };
@@ -132,5 +185,6 @@ fn main() {
     let mut x = Board::new_empty();
     let file = fs::read_to_string("../board_layouts/fen_custom_format/out.fen").expect("read file");
     Board::fill_fen_custom_board(&mut x, file);
-    Board::debug_print(&mut x);
+    println!("{},{}", x.white_king_position[0], x.white_king_position[1]);
+    dbg!(&x);
 }
