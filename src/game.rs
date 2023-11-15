@@ -77,7 +77,7 @@ mod game
                 for j in 0..8 {
                     board.push_str(" ");
                     board.push_str(&self.board[i][j].int_representation.to_string().to_owned());
-              }
+                }
                 board.push_str("\n");
             }
             write!(f, "Board:\n----------------\n{}\n----------------", board.trim_end());
@@ -91,38 +91,13 @@ mod game
                 board.push_str("\n");
             }
             write!(f, "Board:\n----------------\n{}\n----------------", board.trim_end())
+
+
         }
 
     }
 
-    impl Board { // RULES
-
-        fn check_scan_diagonals(king_x: i8, king_y: i8) {
-
-            for horiz in 0..2 {
-                let mut h_dir: u8 = 1;
-                for verti in 0..2 {
-                    let mut v_dir: u8 = 0;
-                }
-            }
-        }
-
-        pub fn in_check(&self) {
-
-            let mut king_x: i8;
-            let mut king_y: i8;
-
-            if (self.t_white) {
-                king_x = self.white_king_position[0];
-                king_y = self.white_king_position[1];
-            } else {
-                king_x = self.black_king_position[0];
-                king_y = self.black_king_position[1];
-            }
-        }
-    }
-
-    impl Board { // UTIL AND CONSTRUCTION
+    impl Board {
 
         fn find_kings(&mut self) {
             for i in 0..8 {
@@ -138,7 +113,6 @@ mod game
                             let mut pos = [-1; 2];
                             pos[0] = i as i8;
                             pos[1] = j as i8;
-                            self.black_king_position = pos;
                         }
                     }
                 }
@@ -217,6 +191,6 @@ fn main() {
     let mut x = Board::new_empty();
     let file = fs::read_to_string("../board_layouts/fen_custom_format/out.fen").expect("read file");
     Board::fill_fen_custom_board(&mut x, file);
-    println!("x: {}, y: {}", x.black_king_position[0], x.black_king_position[1]);
+    println!("{},{}", x.white_king_position[0], x.white_king_position[1]);
     dbg!(&x);
 }
