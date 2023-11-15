@@ -66,6 +66,8 @@ mod game
         pub white_king_position: [i8; 2],
         pub black_king_position: [i8; 2],
         pub t_white: bool,
+        pub curr_king_position: [i8; 2],
+        pub enemy_king_position: [i8; 2],
     }
 
     impl Debug for Board {
@@ -185,6 +187,8 @@ mod game
                 fen_parse: "".to_string(),
                 white_king_position: [-1; 2],
                 black_king_position: [-1; 2],
+                curr_king_position: [-1, 2],
+                enemy_king_position: [-1, 2],
                 t_white: true,
                         }
         }
