@@ -248,6 +248,48 @@ mod game
 
             return false
         }
+        fn in_range(x: i8, y: i8) -> bool {
+            if x < 8 && x > 0 && y < 8 && y > 0 {
+                return true;
+            };
+            return false;
+        }
+
+        fn is_enemy_knight(&self, x: i8, y: i8) -> bool {
+            if Self::is_enemy(&self, self.board[x as usize][y as usize]) && self.board[x as usize][y as usize].int_representation == 3 {
+                return true;
+            }
+            return false;
+        }
+
+        fn check_scan_knight_squares(&self, kx: i8, ky: i8) -> bool { // kx, ky -> king_x, king_y
+            if Self::in_range(kx + 2, ky + 1) && Self::is_enemy_knight(&self, kx + 2, ky + 1) {
+                return true;
+            }
+            if Self::in_range(kx + 2, ky - 1) && Self::is_enemy_knight(&self, kx + 2, ky - 1) {
+                return true;
+            }
+            if Self::in_range(kx + 1, ky + 2) && Self::is_enemy_knight(&self, kx + 1, ky + 2) {
+                return true;
+            }
+            if Self::in_range(kx + 1, ky - 2) && Self::is_enemy_knight(&self, kx + 2, ky - 2) {
+                return true;
+            }
+            // 
+            if Self::in_range(kx - 1, ky + 1) && Self::is_enemy_knight(&self, kx - 1, ky + 1) {
+                return true;
+            }
+            if Self::in_range(kx - 1, ky - 1) && Self::is_enemy_knight(&self, kx - 1, ky - 1) {
+                return true;
+            }
+            if Self::in_range(kx - 2, ky + 2) && Self::is_enemy_knight(&self, kx - 2, ky + 2) {
+                return true;
+            }
+            if Self::in_range(kx - 2, ky - 2) && Self::is_enemy_knight(&self, kx - 2, ky - 2) {
+                return true;
+            }
+            return false;
+        }
 
         pub fn in_check(&self) -> bool {
 
@@ -261,7 +303,6 @@ mod game
                 king_x = self.black_king_position[0];
                 king_y = self.black_king_position[1];
             }
-
             return Self::check_scan_diagonals(&self, king_x, king_y);
         }
 
