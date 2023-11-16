@@ -158,7 +158,7 @@ mod game
         }
 
         fn is_diagonal_attacker(&self, piece: Piece) -> bool {
-            if Self::is_enemy(&self, piece) && (piece.int_representation == 5 || piece.int_representation == 4 || piece.int_representation == 6) { // Checking 6 might allow us to prevent illegal king to king moves -> Otherwise will have to implement another function and remove this.
+            if Self::is_enemy(&self, piece) && (piece.int_representation == 5 || piece.int_representation == 4) {
                return true;
             }
 
@@ -208,7 +208,7 @@ mod game
         }
 
         fn is_line_attacker(&self, piece: Piece) -> bool {
-            if Self::is_enemy(&self, piece) && (piece.int_representation == 5 || piece.int_representation == 2 || piece.int_representation == 6) {
+            if Self::is_enemy(&self, piece) && (piece.int_representation == 5 || piece.int_representation == 2) {
                return true;
             }
 
@@ -327,7 +327,6 @@ mod game
             Self::fill_fen_parsed(self);
             Self::color_fen_parsed(self, &strings[1]);
             Self::find_kings(self);
-
         }
 
         pub fn new() -> Self {
