@@ -6,7 +6,7 @@ mod game
     #[derive (Copy)]
     pub struct Color
     {
-        color: i8,
+        pub color: i8,
     }
 
     impl Color
@@ -209,6 +209,14 @@ mod game
             }
         }
 
+        fn color_fen_parsed(&mut self, color: &str) {
+            if color.to_string() == "1" {
+            self.curr_color = Color::new(0);
+            } else {
+            self.curr_color = Color::new(1);
+            }
+        }
+
         fn fill_fen_parsed(&mut self) {
             let parts = self.fen_parse.trim_end().split(' ');
             let collection = parts.collect::<Vec<&str>>();
@@ -231,6 +239,7 @@ mod game
             let strings: Vec<String> = collection.iter().map(|&s|(s.into())).collect();
             self.fen_parse = (&strings[0]).to_string();
             Self::fill_fen_parsed(self);
+            Self::color_fen_parsed(self, &strings[1]);
             Self::find_kings(self);
 
         }
