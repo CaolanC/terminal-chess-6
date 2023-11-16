@@ -59,6 +59,24 @@ mod game
         }
     }
 
+    pub struct Move
+    {
+        pub from_piece: Piece,
+        pub to_piece: Piece,
+        pub coords: [i8; 4],
+    }
+
+    impl Move
+    {
+        pub fn new(from_x: i8, from_y: i8, to_x: i8, to_y: i8) -> Self {
+            Self {
+                from_piece: Piece::new("00", 0, 0),
+                to_piece: Piece::new("00", 0, 0),
+                coords: [from_x, from_y, to_x, to_y],
+            }
+        }
+    }
+
     pub struct Board
     {
         pub board: [[Piece; 8]; 8],
@@ -68,8 +86,7 @@ mod game
         pub t_white: bool,
         pub curr_king_position: [i8; 2],
         pub enemy_king_position: [i8; 2],
-        pub previous_move: [i8; 4],
-        pub previous_piece: Piece,
+        pub prev_move: Move,
     }
 
     impl Debug for Board {
@@ -123,10 +140,11 @@ mod game
             }
         }
 
-        pub fn make_move(&mut self, row_x: u8, col_x: u8, row_y: u8, col_y: u8) {
-            self.board[row_y as usize][col_y as usize] = self.board[row_x as usize][row_x as usize];
-            self.board[row_x as usize][col_x as usize] = Piece::new(&"00".to_string(), 0, 0); 
+        pub fn make_move(&mut self, mv: Move) {
+            self.board[mv.coords[2] as usize][mv.coords[3] as usize] = self.board[mv.coords[0] as usize][mv.coords[1] as usize];
+            self.board[mv.coords[0] as usize][mv.coords[1] as usize] = Piece::new(&"00".to_string(), 0, 0);
         }
+
     }
 
     impl Board { // UTIL AND CONSTRUCTION
@@ -197,36 +215,20 @@ mod game
                 curr_king_position: [-1, 2],
                 enemy_king_position: [-1, 2],
                 t_white: true,
-                previous_move: [-1; 4],
-                previous_piece: Piece::new("00", 0, 0),
+                prev_move: Move::new(-1,-1,-1,-1),
                         }
-        }
-
-        pub fn default_fill(&mut self){
-            for i in 0..8 {
-                for j in 0..8
-                {
-                    self.board[i][j] = Piece {
-                        is_empty: true,
-                        is_white: false,
-                        is_black: false,
-                        int_representation: 0,
-                        row: -1,
-                        collumn: -1,
-                    };
-                };
-            };
         }
     }
 }
 
 use game::Board;
+use game::Move;
 use std::fs;
 fn main() { 
     let mut x = Board::new();
     let file = fs::read_to_string("../board_layouts/fen_custom_format/out.fen").expect("read file");
     Board::fill_fen_custom_board(&mut x, file);
-    Board::make_move(&mut x, 0, 0, 5, 5);
-    println!("x: {}, y: {}", x.black_king_position[0], x.black_king_position[1]);
+    let mv: Move = Move::new(0,4,5,5);
+    Board::make_move(&mut x, mv);
     dbg!(&x);
 }
