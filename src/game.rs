@@ -23,7 +23,7 @@ mod game
             return false
         }
 
-        pub fn new(str_fen: &String, row: i32, collumn: i32) -> Self {
+        pub fn new(str_fen: &str, row: i32, collumn: i32) -> Self {
             if str_fen.to_string() == "00" {
                 Self {
                     is_empty: true,
@@ -68,6 +68,8 @@ mod game
         pub t_white: bool,
         pub curr_king_position: [i8; 2],
         pub enemy_king_position: [i8; 2],
+        pub previous_move: [i8; 4],
+        pub previous_piece: Piece,
     }
 
     impl Debug for Board {
@@ -95,7 +97,7 @@ mod game
 
     }
 
-    impl Board { // RULES
+    impl Board { // RULES | LOGIC | MOVEMENT
 
         fn check_scan_diagonals(king_x: i8, king_y: i8) {
 
@@ -119,6 +121,11 @@ mod game
                 king_x = self.black_king_position[0];
                 king_y = self.black_king_position[1];
             }
+        }
+
+        pub fn make_move(&mut self, row_x: u8, col_x: u8, row_y: u8, col_y: u8) {
+            self.board[row_y as usize][col_y as usize] = self.board[row_x as usize][row_x as usize];
+            self.board[row_x as usize][col_x as usize] = Piece::new(&"00".to_string(), 0, 0); 
         }
     }
 
@@ -171,7 +178,7 @@ mod game
 
         }
 
-        pub fn new_empty() -> Self {
+        pub fn new() -> Self {
 
             Self {
                 board: [[Piece {
@@ -190,6 +197,8 @@ mod game
                 curr_king_position: [-1, 2],
                 enemy_king_position: [-1, 2],
                 t_white: true,
+                previous_move: [-1; 4],
+                previous_piece: Piece::new("00", 0, 0),
                         }
         }
 
@@ -214,9 +223,10 @@ mod game
 use game::Board;
 use std::fs;
 fn main() { 
-    let mut x = Board::new_empty();
+    let mut x = Board::new();
     let file = fs::read_to_string("../board_layouts/fen_custom_format/out.fen").expect("read file");
     Board::fill_fen_custom_board(&mut x, file);
+    Board::make_move(&mut x, 0, 0, 5, 5);
     println!("x: {}, y: {}", x.black_king_position[0], x.black_king_position[1]);
     dbg!(&x);
 }
