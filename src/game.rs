@@ -4,11 +4,39 @@ mod game
 
     #[derive (Clone)]
     #[derive (Copy)]
+    pub struct Color
+    {
+        color: i8,
+    }
+
+    impl Color
+    {
+        pub fn new(color_int: i8) -> Self {
+            Self {
+                color: color_int,
+            }
+        }
+
+        pub fn invert(&mut self) {
+            if self.color == -1 {
+                println!("Color not inverted; color had value of -1");
+            }
+            if self.color == 0 {
+                self.color = 1;
+            } else {
+                self.color = 0;
+            }
+        }
+    }
+
+    #[derive (Clone)]
+    #[derive (Copy)]
     pub struct Piece
     {
         pub is_empty: bool,
         pub is_white: bool,
         pub is_black: bool,
+        pub color: Color,
         pub int_representation: u8,
         pub row: i32,
         pub collumn: i32,
@@ -32,6 +60,7 @@ mod game
                     int_representation: 0,
                     row: -1,
                     collumn: -1,
+                    color: Color::new(-1),
                 }
             } else {
                 let mut fen_chars = str_fen.chars();
@@ -39,12 +68,15 @@ mod game
                 let color = fen_chars.next_back().expect("int-char unwrap");
                 let mut s_empty = true;
                 let mut s_is_white = false;
+                let mut s_int_color = -1;
                 if s_int_rep != 0 {
                     s_empty = false;
                     if Self::bool_color(color) {
                         s_is_white = false;
+                        s_int_color = 1;
                     } else {
                         s_is_white = true;
+                        s_int_color = 0;
                     }
                 }
                 Self {
@@ -54,6 +86,7 @@ mod game
                     int_representation: s_int_rep,
                     row: row,
                     collumn: collumn,
+                    color: Color::new(s_int_color),
                 }
             }
         }
@@ -87,6 +120,7 @@ mod game
         pub curr_king_position: [i8; 2],
         pub enemy_king_position: [i8; 2],
         pub prev_move: Move,
+        pub curr_color: Color,
     }
 
     impl Debug for Board {
@@ -116,12 +150,15 @@ mod game
 
     impl Board { // RULES | LOGIC | MOVEMENT
 
-        fn check_scan_diagonals(king_x: i8, king_y: i8) {
+        fn is_enemy(&self, piece: Piece) {
 
-            for horiz in 0..2 {
-                let mut h_dir: u8 = 1;
-                for verti in 0..2 {
-                    let mut v_dir: u8 = 0;
+        }
+
+        fn check_scan_diagonals(&self, king_x: i8, king_y: i8) {
+
+            for x in king_x..8 {
+                for y in king_y..8 {
+                    println!("{}", self.board[x as usize][y as usize].int_representation)
                 }
             }
         }
@@ -138,6 +175,8 @@ mod game
                 king_x = self.black_king_position[0];
                 king_y = self.black_king_position[1];
             }
+
+            Board::check_scan_diagonals(&self, king_x, king_y);
         }
 
         pub fn make_move(&mut self, mv: Move) {
@@ -206,9 +245,9 @@ mod game
                     int_representation: 0,
                     row: -1,
                     collumn: -1,
-                }
-                    
-                    ; 8]; 8],
+                    color: Color::new(-1),
+                }; 8]; 8],
+
                 fen_parse: "".to_string(),
                 white_king_position: [-1; 2],
                 black_king_position: [-1; 2],
@@ -216,7 +255,9 @@ mod game
                 enemy_king_position: [-1, 2],
                 t_white: true,
                 prev_move: Move::new(-1,-1,-1,-1),
-                        }
+                curr_color: Color::new(-1),
+
+            }
         }
     }
 }
@@ -229,6 +270,7 @@ fn main() {
     let file = fs::read_to_string("../board_layouts/fen_custom_format/out.fen").expect("read file");
     Board::fill_fen_custom_board(&mut x, file);
     let mv: Move = Move::new(0,4,5,5);
-    Board::make_move(&mut x, mv);
+    //Board::make_move(&mut x, mv);
+    Board::in_check(&x);
     dbg!(&x);
 }
