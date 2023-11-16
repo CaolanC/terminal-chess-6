@@ -158,7 +158,7 @@ mod game
         }
 
         fn is_diagonal_attacker(&self, piece: Piece) -> bool {
-            if Self::is_enemy(&self, piece) && (piece.int_representation == 5 || piece.int_representation == 4) {
+            if Self::is_enemy(&self, piece) && (piece.int_representation == 5 || piece.int_representation == 4 || piece.int_representation == 6) { // Checking 6 might allow us to prevent illegal king to king moves -> Otherwise will have to implement another function and remove this.
                return true;
             }
 
@@ -205,6 +205,48 @@ mod game
             }
 
             return false;
+        }
+
+        fn is_line_attacker(&self, piece: Piece) -> bool {
+            if Self::is_enemy(&self, piece) && (piece.int_representation == 5 || piece.int_representation == 2 || piece.int_representation == 6) {
+               return true;
+            }
+
+            return false;
+        }
+
+        fn check_scan_lines(&self, king_x: i8, king_y: i8) -> bool {
+
+            for x in king_x..8 {    // Row Checking Right
+                if Self::is_line_attacker(&self, self.board[king_x as usize][x as usize]) {
+                    return true;
+                } else if !(Self::is_enemy(&self, self.board[king_x as usize][x as usize])){
+                    break;
+                }
+            }
+            for x in (king_x..8).rev() { // Row Checking Left
+                if Self::is_line_attacker(&self, self.board[king_x as usize][x as usize]) {
+                    return true;
+                } else if !(Self::is_enemy(&self, self.board[king_x as usize][x as usize])){
+                    break;
+                }
+            }
+            for y in king_y..8 { // Collumn Checking Up
+                if Self::is_line_attacker(&self, self.board[king_y as usize][y as usize]) {
+                    return true;
+                } else if !(Self::is_enemy(&self, self.board[king_y as usize][y as usize])){
+                    break;
+                }
+            }
+            for y in (king_y..8).rev() { // Collumn Checking Down
+                if Self::is_line_attacker(&self, self.board[king_y as usize][y as usize]) {
+                    return true;
+                } else if !(Self::is_enemy(&self, self.board[king_y as usize][y as usize])){
+                    break;
+                }
+            }
+
+            return false
         }
 
         pub fn in_check(&self) -> bool {
