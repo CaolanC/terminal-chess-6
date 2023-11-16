@@ -150,20 +150,64 @@ mod game
 
     impl Board { // RULES | LOGIC | MOVEMENT
 
-        fn is_enemy(&self, piece: Piece) {
-
+        fn is_enemy(&self, piece: Piece) -> bool {
+            if self.curr_color.color != piece.color.color && !piece.is_empty{
+                return true
+            }
+            return false
         }
 
-        fn check_scan_diagonals(&self, king_x: i8, king_y: i8) {
+        fn is_diagonal_attacker(&self, piece: Piece) -> bool {
+            if Self::is_enemy(&self, piece) && (piece.int_representation == 5 || piece.int_representation == 4) {
+               return true;
+            }
+
+            return false;
+        }
+
+        fn check_scan_diagonals(&self, king_x: i8, king_y: i8) -> bool {
 
             for x in king_x..8 {
                 for y in king_y..8 {
-                    println!("{}", self.board[x as usize][y as usize].int_representation)
+                    if Self::is_diagonal_attacker(&self, self.board[king_x as usize][king_y as usize]) {
+                        return true;
+                    } else if !(Self::is_enemy(&self, self.board[king_x as usize][king_y as usize])){
+                        break;
+                    }
                 }
             }
+            for x in king_x..8 {
+                for y in (0..king_y).rev() {
+                    if Self::is_diagonal_attacker(&self, self.board[king_x as usize][king_y as usize]) {
+                        return true;
+                    } else if !(Self::is_enemy(&self, self.board[king_x as usize][king_y as usize])){
+                        break;
+                    }
+                }
+            }
+            for x in (0..king_x).rev() {
+                for y in king_y..8 {
+                    if Self::is_diagonal_attacker(&self, self.board[king_x as usize][king_y as usize]) {
+                        return true;
+                    } else if !(Self::is_enemy(&self, self.board[king_x as usize][king_y as usize])){
+                        break;
+                    }
+                }
+            }
+            for x in (0..king_x).rev() {
+                for y in (0..king_y).rev() {
+                    if Self::is_diagonal_attacker(&self, self.board[king_x as usize][king_y as usize]) {
+                        return true;
+                    } else if !(Self::is_enemy(&self, self.board[king_x as usize][king_y as usize])){
+                        break;
+                    }
+                }
+            }
+
+            return false;
         }
 
-        pub fn in_check(&self) {
+        pub fn in_check(&self) -> bool {
 
             let mut king_x: i8;
             let mut king_y: i8;
@@ -176,7 +220,7 @@ mod game
                 king_y = self.black_king_position[1];
             }
 
-            Board::check_scan_diagonals(&self, king_x, king_y);
+            return Self::check_scan_diagonals(&self, king_x, king_y);
         }
 
         pub fn make_move(&mut self, mv: Move) {
@@ -280,6 +324,8 @@ fn main() {
     Board::fill_fen_custom_board(&mut x, file);
     let mv: Move = Move::new(0,4,5,5);
     //Board::make_move(&mut x, mv);
-    Board::in_check(&x);
+    if Board::in_check(&x) {
+        println!("in check");
+    }
     dbg!(&x);
 }
