@@ -13,7 +13,7 @@ mod game
     {
         pub fn new(color_int: i8) -> Self {
             Self {
-                color: color_int,
+                color: color_int, // 0 -> White; 1 -> Black; -1 -> Out of play.
             }
         }
 
@@ -289,6 +289,28 @@ mod game
                 return true;
             }
             return false;
+        }
+
+        fn is_enemy_pawn(&self, x: i8, y: i8) -> bool {
+            if Self::is_enemy(&self, self.board[x as usize][y as usize]) && self.board[x as usize][y as usize].int_representation == 1 {
+                return true;
+            }
+            return false;
+        }
+
+        fn check_pawn_checks(&self, kx: i8, ky: i8) -> bool {
+            let mut dir = 1;
+            if self.curr_color.color == 0 {
+                dir = -1;
+            }
+            if Self::in_range(kx + dir, ky + 1) && Self::is_enemy_pawn(&self, kx + dir, ky + 1) {
+                return true;
+            }
+            if Self::in_range(kx + dir, ky - 1) && Self::is_enemy_pawn(&self, kx + dir, ky - 1) {
+                return true;
+            }
+            return false;
+
         }
 
         pub fn in_check(&self) -> bool {
