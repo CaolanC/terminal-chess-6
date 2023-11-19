@@ -9,7 +9,6 @@ pub struct Fen {
     board_fen: String,
     parsed_board_layout: [[u8; 8]; 8],
 }   
-
 impl Fen {
 
     fn fen_numeric_to_tcfen(c: char) -> String {
@@ -94,7 +93,6 @@ impl Fen {
         let parts = contents.split(" ");
         let collection = parts.collect::<Vec<&str>>();
         let strings: Vec<String> = collection.iter().map(|&s|(s.into())).collect();
-
         self.unparsed_fen_vector = strings;
         }
 
@@ -129,6 +127,7 @@ impl Fen {
 
         let en_passent: &String = &Self::parse_en_passent(&self.unparsed_fen_vector[3]);
         tcfen.push_str(&en_passent);
+        tcfen.push_str("\n");
         println!("{}", tcfen);
         self.board_fen = tcfen;
     }
@@ -140,19 +139,35 @@ impl Fen {
             unparsed_fen_vector: Vec::new(),
         }
     }
-
-    pub fn write_fen_file(&mut self) {
-        let file = fs::OpenOptions::new()
-                                        .append(true)
-                                        .open("../../board_layouts/fen_custom_format/out.fen");
-    let _ = file.expect("file write").write_all(self.board_fen.as_bytes());
-
+    pub fn file_exists(path: &str) -> bool {
+        fs::metadata(path).is_ok()
     }
 
+    pub fn write_fen_file(&mut self, mut output: String, name: &str) {
+        output.push_str(name);
+        println!("{}", output);
+        let file = fs::OpenOptions::new()
+                                        .create(true)
+                                        .write(true)
+                                        .open(output);
+        let _ = file.expect("file write").write_all(self.board_fen.as_bytes());
+    }
 }
 
+use std::env;
+use std::process;
 fn main() {
+    let args: Vec<_> = env::args().collect();
+    if args.len() < 2 {
+        println!("Not enough args -- ./fen_parser <unparsed_path> <filename>");
+        process::exit(0x0100);
+    }
+    
+    let default = "../../board_layouts/fen_custom_format/".to_string();
+    
     let mut x = Fen::new();
-    Fen::read_fen(&mut x, "../../board_layouts/fen_strings/default.txt");
+    Fen::read_fen(&mut x, &args[1]);
     Fen::parse_board_layout(&mut x);
+    Fen::write_fen_file(&mut x, default, &args[2]);
+    println!("Wrote converted fen to file.");
 }
