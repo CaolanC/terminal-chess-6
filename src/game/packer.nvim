@@ -1,0 +1,5 @@
+use 'neovim/nvim-lspconfig'
+use 'simrat39/rust-tools.nvim'
+
+use 'nvim-lua/plenary.nvim'
+use 'mfussenegger/nvim-dap'

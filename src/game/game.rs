@@ -169,7 +169,7 @@ use std::fmt::Debug;
                 for y in (king_y)..8_usize {
                     if Self::is_diagonal_attacker(&self, self.board[x][y]) {
                         return true;
-                    } else if !(Self::is_enemy(&self, self.board[x][y])){
+                    } else if !(self.board[x][y].is_empty){
                         break;
                     }
                 }
@@ -178,7 +178,7 @@ use std::fmt::Debug;
                 for y in (0..king_y).rev() {
                     if Self::is_diagonal_attacker(&self, self.board[x][y]) {
                         return true;
-                    } else if !(Self::is_enemy(&self, self.board[x][y])){
+                    } else if !(self.board[x][y].is_empty){
                         break;
                     }
                 }
@@ -187,7 +187,7 @@ use std::fmt::Debug;
                 for y in (king_y)..8 {
                     if Self::is_diagonal_attacker(&self, self.board[x][y]) {
                         return true;
-                    } else if !(Self::is_enemy(&self, self.board[x][y])){
+                    } else if !(self.board[x][y].is_empty){
                         break;
                     }
                 }
@@ -196,7 +196,7 @@ use std::fmt::Debug;
                 for y in (0..king_y).rev() {
                     if Self::is_diagonal_attacker(&self, self.board[x][y]) {
                         return true;
-                    } else if !(Self::is_enemy(&self, self.board[x][y])){
+                    } else if !(self.board[x][y].is_empty){
                         break;
                     }
                 }
@@ -434,7 +434,7 @@ use std::fmt::Debug;
 
         pub fn default_new() -> Self {
             let mut def = Board::new();
-            Board::fill_fen_custom_board(&mut def, fs::read_to_string("../board_layouts/fen_custom_format/out.fen").expect("read file"));
+            Board::fill_fen_custom_board(&mut def, fs::read_to_string("../../board_layouts/fen_custom_format/out.fen").expect("read file"));
 
             return def;
         }
