@@ -15,3 +15,7 @@ harness = false
 [[bin]]
 name = "game"
 path = "./src/game/game.rs"
+
+[[bin]]
+name = "legal-moves"
+path = "./src/game/legal_moves.rs"

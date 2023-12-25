@@ -36,8 +36,8 @@ use std::fmt::Debug;
         pub is_black: bool,
         pub color: Color,
         pub int_representation: u8,
-        pub row: i32,
-        pub collumn: i32,
+        pub row: i8,
+        pub collumn: i8,
     }
 
     impl Piece {
@@ -49,7 +49,7 @@ use std::fmt::Debug;
             return false
         }
 
-        pub fn new(str_fen: &str, row: i32, collumn: i32) -> Self {
+        pub fn new(str_fen: &str, row: i8, collumn: i8) -> Self {
             if str_fen.to_string() == "00" {
                 Self {
                     is_empty: true,
@@ -119,6 +119,8 @@ use std::fmt::Debug;
         pub enemy_king_position: [i8; 2],
         pub prev_move: Move,
         pub curr_color: Color,
+        pub white_pieces: Vec<Piece>,
+        pub black_pieces: Vec<Piece>,
     }
 
     impl Debug for Board {
@@ -344,11 +346,10 @@ use std::fmt::Debug;
 
         pub fn make_move(&mut self, mv: Move) {
             self.board[mv.coords[2] as usize][mv.coords[3] as usize] = self.board[mv.coords[0] as usize][mv.coords[1] as usize];
-            self.board[mv.coords[0] as usize][mv.coords[1] as usize] = Piece::new(&"00".to_string(), 0, 0);
+            self.board[mv.coords[0] as usize][mv.coords[1] as usize] = Piece::new(&"00".to_string(), mv.coords[0], mv.coords[1]);
         }
 
     }
-
     impl Board { // UTIL AND CONSTRUCTION
 
         fn find_kings(&mut self) {
@@ -391,7 +392,7 @@ use std::fmt::Debug;
                     j = 0;
                     i += 1;
                 }
-                self.board[i][j] = Piece::new(&segment, i as i32, j as i32);
+                self.board[i][j] = Piece::new(&segment, i as i8, j as i8);
                 j += 1;
             }
         }
@@ -428,13 +429,15 @@ use std::fmt::Debug;
                 t_white: true,
                 prev_move: Move::new(-1,-1,-1,-1),
                 curr_color: Color::new(-1),
+                white_pieces: Vec::new(),
+                black_pieces: Vec::new(),
 
             }
         }
 
         pub fn default_new() -> Self {
             let mut def = Board::new();
-            Board::fill_fen_custom_board(&mut def, fs::read_to_string("../../board_layouts/fen_custom_format/out.fen").expect("read file"));
+            Board::fill_fen_custom_board(&mut def, fs::read_to_string("../../board_layouts/fen_custom_format/out.fen").expect("read file")); // to-do, update path .chess-config in home dir
 
             return def;
         }
@@ -442,7 +445,7 @@ use std::fmt::Debug;
 use std::fs;
 fn main() { 
     let mut x = Board::new();
-    let file = fs::read_to_string("../../board_layouts/fen_custom_format/qxk_check_test.fen").expect("read file");
+    let file = fs::read_to_string("../../board_layouts/fen_custom_format/qxk_check_test.fen").expect("read file"); // to-do, update path to .chess-config in home directory
     Board::fill_fen_custom_board(&mut x, file);
     //let mv: Move = Move::new(0,4,5,5);
     //Board::make_move(&mut x, mv);
