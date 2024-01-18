@@ -3,10 +3,6 @@ use game::Board;
 impl Board
 {
 
-    pub fn get_legal_moves() {
-
-    }
-
     pub fn scan_lines(&self, _x: usize, _y: usize, mut legal_moves: Vec<[i8;2]>) -> Vec<[i8; 2]> {
         for x in 0.._x {
             for y in 0.._y {

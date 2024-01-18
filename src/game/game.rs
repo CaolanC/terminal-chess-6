@@ -349,6 +349,22 @@ use std::fmt::Debug;
             self.board[mv.coords[0] as usize][mv.coords[1] as usize] = Piece::new(&"00".to_string(), mv.coords[0], mv.coords[1]);
         }
 
+        fn get_color_pieces(&mut self) {
+            for row in 0..8 {
+                for col in 0..8 {
+                    if self.board[row][col].color.color == 0 {
+                        self.white_pieces.push(self.board[row][col]);
+                    } else if self.board[row][col].color.color == 1 {
+                        self.black_pieces.push(self.board[row][col]);
+                    }
+                }
+            }
+        }
+
+        pub fn get_legal_moves() {
+            
+        }
+
     }
     impl Board { // UTIL AND CONSTRUCTION
 
@@ -445,7 +461,7 @@ use std::fmt::Debug;
 use std::fs;
 fn main() { 
     let mut x = Board::new();
-    let file = fs::read_to_string("../../board_layouts/fen_custom_format/qxk_check_test.fen").expect("read file"); // to-do, update path to .chess-config in home directory
+    let file = fs::read_to_string("../../board_layouts/fen_custom_format/out.fen").expect("read file"); // to-do, update path to .chess-config in home directory
     Board::fill_fen_custom_board(&mut x, file);
     //let mv: Move = Move::new(0,4,5,5);
     //Board::make_move(&mut x, mv);
@@ -454,6 +470,7 @@ fn main() {
     } else {
         println!("Not in check");
     }
-    println!("{}", x.curr_color.color);
+    x.get_color_pieces();
+    println!("{}", x.black_pieces.len());
     dbg!(&x);
 }
