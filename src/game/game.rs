@@ -38,6 +38,7 @@ use std::fmt::Debug;
         pub int_representation: u8,
         pub row: i8,
         pub collumn: i8,
+        pub has_moved: bool,
     }
 
     impl Piece {
@@ -59,6 +60,7 @@ use std::fmt::Debug;
                     row: -1,
                     collumn: -1,
                     color: Color::new(-1),
+                    has_moved: false,
                 }
             } else {
                 let mut fen_chars = str_fen.chars();
@@ -85,6 +87,7 @@ use std::fmt::Debug;
                     row: row,
                     collumn: collumn,
                     color: Color::new(s_int_color),
+                    has_moved: false,
                 }
             }
         }
@@ -249,7 +252,7 @@ use std::fmt::Debug;
             return false
         }
         fn in_range(x: usize, y: usize) -> bool {
-            if x < 8 && x > 0 && y < 8 && y > 0 {
+            if x < 8 && x >= 0 && y < 8 && y >= 0 {
                 return true;
             };
             return false;
@@ -361,8 +364,57 @@ use std::fmt::Debug;
             }
         }
 
-        pub fn get_legal_moves() {
-            
+        fn check_possible_pawn_moves(&self, piece: Piece, color: i8) -> Vec<Move> {
+            let row: i8 = piece.row;
+            let col: i8 = piece.collumn;
+            let mut moves = Vec::<Move>::new();
+            let mut dir: i8 = -1;
+
+            if color == 1 {
+                dir = 1;
+            }
+            if Self::in_range((row + dir) as usize, col as usize) && (self.board[(row + dir) as usize][col as usize].is_empty) {
+                moves.push(Move::new(row, col, row + dir, col));
+                if Self::in_range((row + 2 * dir) as usize, col as usize) && (self.board[(row + 2 * dir) as usize][col as usize].is_empty) {
+                    moves.push(Move::new(row, col, row + (2 * dir), col));
+                }
+            }
+
+            if Self::in_range((row + dir) as usize, (col + 1) as usize) && self.board[(row + dir) as usize][(col + 1) as usize].color.color != color &&
+            !self.board[(row + dir) as usize][(col + 1) as usize].is_empty
+            {
+                moves.push(Move::new(row, col, row + dir, col + 1));
+            }
+
+            if Self::in_range((row + dir) as usize, (col - 1) as usize) && self.board[(row + dir) as usize][(col - 1) as usize].color.color != color &&
+            !self.board[(row + dir) as usize][(col - 1) as usize].is_empty
+            {
+                moves.push(Move::new(row, col, row + dir, col - 1));
+            }
+
+            println!("{},{}: {}", row, col, moves.len());
+
+            return moves;
+
+        }
+
+        fn check_possible_moves(&self, piece: Piece, color: i8) {
+            if piece.int_representation == 1 {
+                Self::check_possible_pawn_moves(&self, piece, color);
+            }
+
+        }
+
+        pub fn get_legal_moves(&mut self) {
+            if self.curr_color.color == 1 {
+                for piece in &self.black_pieces {
+                    Self::check_possible_moves(&self, *piece, self.curr_color.color);
+                }
+            } else {
+                for piece in &self.white_pieces {
+                    Self::check_possible_moves(&self, *piece, self.curr_color.color);
+                }
+            }
         }
 
     }
@@ -435,6 +487,7 @@ use std::fmt::Debug;
                     row: -1,
                     collumn: -1,
                     color: Color::new(-1),
+                    has_moved: false,
                 }; 8]; 8],
 
                 fen_parse: "".to_string(),
@@ -472,5 +525,7 @@ fn main() {
     }
     x.get_color_pieces();
     println!("{}", x.black_pieces.len());
+    x.get_legal_moves();
     dbg!(&x);
+    println!("FIN");
 }
