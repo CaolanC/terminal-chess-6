@@ -97,12 +97,12 @@ use std::fmt::Debug;
     {
         pub from_piece: Piece,
         pub to_piece: Piece,
-        pub coords: [i8; 4],
+        pub coords: [usize; 4],
     }
 
     impl Move
     {
-        pub fn new(from_x: i8, from_y: i8, to_x: i8, to_y: i8) -> Self {
+        pub fn new(from_x: usize, from_y: usize, to_x: usize, to_y: usize) -> Self {
             Self {
                 from_piece: Piece::new("00", 0, 0),
                 to_piece: Piece::new("00", 0, 0),
@@ -251,7 +251,7 @@ use std::fmt::Debug;
 
             return false
         }
-        fn in_range(x: usize, y: usize) -> bool {
+        fn in_range(x: i8, y: i8) -> bool {
             if x < 8 && x >= 0 && y < 8 && y >= 0 {
                 return true;
             };
@@ -266,29 +266,29 @@ use std::fmt::Debug;
         }
 
         fn check_scan_knight_squares(&self, kx: usize, ky: usize) -> bool { // kx, ky -> king_x, king_y
-            if Self::in_range(kx + 2, ky + 1) && Self::is_enemy_knight(&self, kx + 2, ky + 1) {
+            if Self::in_range(kx as i8 + 2, ky as i8 + 1) && Self::is_enemy_knight(&self, kx + 2, ky + 1) {
                 return true;
             }
-            if Self::in_range(kx + 2, ky - 1) && Self::is_enemy_knight(&self, kx + 2, ky - 1) {
+            if Self::in_range(kx as i8 + 2, ky as i8 - 1) && Self::is_enemy_knight(&self, kx + 2, ky - 1) {
                 return true;
             }
-            if Self::in_range(kx + 1, ky + 2) && Self::is_enemy_knight(&self, kx + 1, ky + 2) {
+            if Self::in_range(kx as i8 + 1, ky as i8 + 2) && Self::is_enemy_knight(&self, kx + 1, ky + 2) {
                 return true;
             }
-            if Self::in_range(kx + 1, ky - 2) && Self::is_enemy_knight(&self, kx + 1, ky - 2) {
+            if Self::in_range(kx as i8 + 1, ky as i8 - 2) && Self::is_enemy_knight(&self, kx + 1, ky - 2) {
                 return true;
             }
             // 
-            if Self::in_range(kx - 1, ky + 2) && Self::is_enemy_knight(&self, kx - 1, ky + 2) {
+            if Self::in_range(kx as i8 - 1, ky as i8 + 2) && Self::is_enemy_knight(&self, kx - 1, ky + 2) {
                 return true;
             }
-            if Self::in_range(kx - 1, ky - 2) && Self::is_enemy_knight(&self, kx - 1, ky - 2) {
+            if Self::in_range(kx as i8 - 1, ky as i8 - 2) && Self::is_enemy_knight(&self, kx - 1, ky - 2) {
                 return true;
             }
-            if Self::in_range(kx - 2, ky + 1) && Self::is_enemy_knight(&self, kx - 2, ky + 1) {
+            if Self::in_range(kx as i8 - 2, ky as i8 + 1) && Self::is_enemy_knight(&self, kx - 2, ky + 1) {
                 return true;
             }
-            if Self::in_range(kx - 2, ky - 1) && Self::is_enemy_knight(&self, kx - 2, ky - 1) {
+            if Self::in_range(kx as i8 - 2, ky as i8 - 1) && Self::is_enemy_knight(&self, kx - 2, ky - 1) {
                 return true;
             }
             return false;
@@ -306,10 +306,10 @@ use std::fmt::Debug;
             if self.curr_color.color == 0 {
                 dir = -1;
             }
-            if Self::in_range(kx + (dir as usize), ky + 1) && Self::is_enemy_pawn(&self, kx + (dir as usize), ky + 1) {
+            if Self::in_range(kx as i8 + dir, ky as i8 + 1) && Self::is_enemy_pawn(&self, kx + (dir as usize), ky + 1) {
                 return true;
             }
-            if Self::in_range(kx + (dir as usize), ky - 1) && Self::is_enemy_pawn(&self, kx + (dir as usize), ky - 1) {
+            if Self::in_range(kx as i8 + dir, ky as i8 - 1) && Self::is_enemy_pawn(&self, kx + (dir as usize), ky - 1) {
                 return true;
             }
             return false;
@@ -349,7 +349,7 @@ use std::fmt::Debug;
 
         pub fn make_move(&mut self, mv: Move) {
             self.board[mv.coords[2] as usize][mv.coords[3] as usize] = self.board[mv.coords[0] as usize][mv.coords[1] as usize];
-            self.board[mv.coords[0] as usize][mv.coords[1] as usize] = Piece::new(&"00".to_string(), mv.coords[0], mv.coords[1]);
+            self.board[mv.coords[0] as usize][mv.coords[1] as usize] = Piece::new(&"00".to_string(), mv.coords[0] as i8, mv.coords[1] as i8);
         }
 
         fn get_color_pieces(&mut self) {
@@ -365,36 +365,51 @@ use std::fmt::Debug;
         }
 
         fn check_possible_pawn_moves(&self, piece: Piece, color: i8) -> Vec<Move> {
-            let row: i8 = piece.row;
-            let col: i8 = piece.collumn;
+            let row: usize = piece.row as usize;
+            let col: usize = piece.collumn as usize;
             let mut moves = Vec::<Move>::new();
             let mut dir: i8 = -1;
 
             if color == 1 {
                 dir = 1;
             }
-            if Self::in_range((row + dir) as usize, col as usize) && (self.board[(row + dir) as usize][col as usize].is_empty) {
-                moves.push(Move::new(row, col, row + dir, col));
-                if Self::in_range((row + 2 * dir) as usize, col as usize) && (self.board[(row + 2 * dir) as usize][col as usize].is_empty) {
-                    moves.push(Move::new(row, col, row + (2 * dir), col));
+            if Self::in_range((row as i8 + dir), col as i8) && (self.board[(row as i8+ dir) as usize][col].is_empty) {
+                moves.push(Move::new(row, col, (row as i8 + dir) as usize, col));
+                if Self::in_range((row as i8 + 2 * dir), col as i8) && (self.board[(row + (2 * dir) as usize)][col].is_empty) {
+                    moves.push(Move::new(row, col, row + (2 * dir) as usize, col));
                 }
             }
 
-            if Self::in_range((row + dir) as usize, (col + 1) as usize) && self.board[(row + dir) as usize][(col + 1) as usize].color.color != color &&
-            !self.board[(row + dir) as usize][(col + 1) as usize].is_empty
+            if Self::in_range(row as i8 + dir, col as i8 + 1) && self.board[(row as i8 + dir) as usize][(col + 1) as usize].color.color != color &&
+            !self.board[(row as i8 + dir) as usize][(col + 1) as usize].is_empty
             {
-                moves.push(Move::new(row, col, row + dir, col + 1));
+                moves.push(Move::new(row, col, (row as i8 + dir) as usize, col + 1));
             }
 
-            if Self::in_range((row + dir) as usize, (col - 1) as usize) && self.board[(row + dir) as usize][(col - 1) as usize].color.color != color &&
-            !self.board[(row + dir) as usize][(col - 1) as usize].is_empty
+            if Self::in_range(row as i8 + dir, col as i8 - 1) && self.board[(row as i8 + dir) as usize][(col - 1)].color.color != color &&
+            !self.board[(row as i8 + dir) as usize][(col - 1) as usize].is_empty
             {
-                moves.push(Move::new(row, col, row + dir, col - 1));
+                moves.push(Move::new(row, col, (row as i8 + dir) as usize, col - 1));
             }
 
             println!("{},{}: {}", row, col, moves.len());
 
             return moves;
+        }
+
+        fn check_possible_rook_moves(&self, piece: Piece, color: i8) {
+            let row: usize = piece.row as usize;
+            let col: usize = piece.collumn as usize;
+            let mut moves = Vec::<Move>::new();
+
+            for i in (row + 1)..8 {
+                if self.board[i as usize][col].is_empty || self.board[i as usize][col].color.color != color {
+                    moves.push(Move::new(row, col, i, col));
+                }
+            }
+
+            for i in (col + 1)..8 {
+            }
 
         }
 
@@ -496,7 +511,7 @@ use std::fmt::Debug;
                 curr_king_position: [-1, 2],
                 enemy_king_position: [-1, 2],
                 t_white: true,
-                prev_move: Move::new(-1,-1,-1,-1),
+                prev_move: Move::new(255,255,255,255),
                 curr_color: Color::new(-1),
                 white_pieces: Vec::new(),
                 black_pieces: Vec::new(),
